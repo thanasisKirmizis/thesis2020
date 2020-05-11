@@ -1,2 +1,2 @@
-# EE AUTH 2020 Thesis
+# EE AUTh Thesis 2020
 A repository for the files of my thesis
