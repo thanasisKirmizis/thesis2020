@@ -3,9 +3,10 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import struct
+import datetime
 
 # Definitions
-TIMESTAMP_OF_CLAP_IN_VIDEO = 8000
+TIMESTAMP_OF_CLAP_IN_VIDEO = 4500
 
 # Initializations
 accel_data = []
@@ -48,9 +49,8 @@ while num:
 
 f_accel.close()
 
-# Subsample the accelerometer's data with 1/2 frequency
-accel_time_data = accel_time_data[::2]
-accel_data = accel_data[::2]
+# Subsample the accelerometer's data
+# ???
 
 # For the gyroscope data
 num = f_gyro.read(8)
@@ -117,12 +117,17 @@ df_magnet = pd.DataFrame(magnet_data, columns = ["X", "Y", "Z"])
 df_magnet.insert(0, "Timestamp", magnet_time_data)
 df_magnet.insert(4, "Class", [-1]*len(magnet_data))
 
-# Adjust the timestamps to correspond to video time in ms (based on the spike of Accel_X)
-idx_of_clap = df_accel['X'].idxmax()
+# Adjust the timestamps to correspond to video time in ms (based on the spike of Accel_X/Accel_Y/Accel_Z)
+idx_of_clap = df_accel['Z'].idxmax()
 
 df_accel['Timestamp'] = df_accel['Timestamp'] - df_accel['Timestamp'][idx_of_clap] + TIMESTAMP_OF_CLAP_IN_VIDEO
 df_gyro['Timestamp'] = df_gyro['Timestamp'] - df_gyro['Timestamp'][idx_of_clap] + TIMESTAMP_OF_CLAP_IN_VIDEO
 df_magnet['Timestamp'] = df_magnet['Timestamp'] - df_magnet['Timestamp'][idx_of_clap] + TIMESTAMP_OF_CLAP_IN_VIDEO
+
+## Also display the timestamp in human readable form
+df_accel['Timestamp'] = [str(datetime.timedelta(milliseconds = ms)) for ms in df_accel.Timestamp]
+df_gyro['Timestamp'] = [str(datetime.timedelta(milliseconds = ms)) for ms in df_gyro.Timestamp]
+df_magnet['Timestamp'] = [str(datetime.timedelta(milliseconds = ms)) for ms in df_magnet.Timestamp]
 
 # Plot the three signals' figures
 plt.figure()
@@ -145,5 +150,5 @@ plt.plot(df_magnet["Z"])
 plt.show()
 
 ### To label data based on timestamp, use the following command ###
-# df_accel["Class"][idx_start:idx_stop] = 1
-# where idxs are found based on the corresponding timestamps
+#df_accel["Class"][idx_start:idx_stop] = 1
+#where idxs are found based on the corresponding timestamps
